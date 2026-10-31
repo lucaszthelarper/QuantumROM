@@ -275,7 +275,6 @@ jobs:
           fi
 
           if [ "$ADD_CHINA_SMART_MANAGER" = "True" ] || [ "$ADD_SAMSUNG_FLAGSHIP_APPS" = "True" ]; then
-              PATCH_APK_SHARED_USER_ID_VERIFICATION "$FIRM_DIR" "$WORK_DIR/services"
           fi
 
           if [ -f "$WORK_DIR/services.jar" ]; then
