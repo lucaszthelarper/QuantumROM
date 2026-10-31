@@ -26,7 +26,7 @@ source "$(pwd)/scripts/debloat.sh"
 source "$(pwd)/scripts/git_utils.sh"
 source "$(pwd)/scripts/QuantumRom.sh"
 
-REPO="SN-Abdullah-Al-Noman/QuantumROM"
+REPO="lucaszthelarper/QuantumROM"
 BRANCH="Devices"
 
 if [ "$STOCK_DEVICE" != "None" ]; then
@@ -37,7 +37,7 @@ if [ "$STOCK_DEVICE" != "None" ]; then
     fi
 
 	echo "✅ Device supported: $STOCK_DEVICE"
-    GIT_SPARSE_DOWNLOAD "SN-Abdullah-Al-Noman/QuantumROM" "Devices" "$STOCK_DEVICE" "$(pwd)/QuantumROM/Devices/$STOCK_DEVICE"
+    GIT_SPARSE_DOWNLOAD "lucaszthelarper/QuantumROM" "Devices" "$STOCK_DEVICE" "$(pwd)/QuantumROM/Devices/$STOCK_DEVICE"
 else
     echo "ℹ️ STOCK_DEVICE is set to None."
 fi
@@ -74,7 +74,7 @@ PATCH_BT_LIB "$FIRM_DIR" "$WORK_DIR"
 
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 B_V="$(grep -m1 '^ro.system.build.version.incremental=' "$FIRM_DIR/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
-BUILD_PROP "$FIRM_DIR" "system" "ro.build.display.id" "${B_ID} ${B_V} V-${VERSION}: Built with Quantum Tools"
-BUILD_PROP "$FIRM_DIR" "product" "ro.build.display.id" "${B_ID} ${B_V} V-${VERSION}: Built with Quantum Tools"
+BUILD_PROP "$FIRM_DIR" "system" "ro.build.display.id" "${B_ID}.${B_V}"
+BUILD_PROP "$FIRM_DIR" "product" "ro.build.display.id" "${B_ID}.${B_V}"
 
 BUILD_IMG "$FIRM_DIR" "all" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
