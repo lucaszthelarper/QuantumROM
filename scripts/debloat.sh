@@ -54,7 +54,7 @@ SAMSUNG_DEX_APPS=("DeXonPC" "DesktopModeUiService" "KnoxDesktopLauncher"
 
 # SAMSUNG BIXBY APPS
 SAMSUNG_BIXBY_APPS=(
-"BixbyWakeup" "BixbyInterpreter" "VisionIntelligence3.7" "Bixby" "BixbyService"
+"BixbyWakeup" "VisionIntelligence3.7" "Bixby" "BixbyService"
 "BixbyVisionFramework3.5" "SystemUIBixby2" "VisionModel-Stub" "SettingsBixby"
 )
 
@@ -92,7 +92,7 @@ HARDWARE_DRIVERS=(
 # MISC / SERVICES
 MISC_SERVICES=(
 "AuthFramework" "Discover" "DiscoverSEP"
-"EarphoneTypeC" "EasySetup" "FotaAgent"
+"EarphoneTypeC" "EasySetup"
 "HashTagService" "LedCoverService"
 "LinkToWindowsService" "MemorySaver_O_Refresh"
 "MultiControl" "MultiControlVP6"
@@ -101,7 +101,7 @@ MISC_SERVICES=(
 "SolarAudio-service" "SPPPushClient"
 "SumeNNService" "SVoiceIME"
 "SwiftkeyIme" "SwiftkeySetting"
-"SystemUpdate" "TADownloader"
+"TADownloader"
 "TalkbackSE" "TalkBack" "TaPackAuthFw"
 "UltraDataSaving_O" "Upday"
 "YourPhone_P1_5" "DsmsAPK"
