@@ -274,9 +274,6 @@ jobs:
               PATCH_SECURE_FOLDER "$FIRM_DIR" "$WORK_DIR/services"
           fi
 
-          if [ "$ADD_CHINA_SMART_MANAGER" = "True" ] || [ "$ADD_SAMSUNG_FLAGSHIP_APPS" = "True" ]; then
-          fi
-
           if [ -f "$WORK_DIR/services.jar" ]; then
               mv -f "$WORK_DIR/services.jar" "$FIRM_DIR/system/system/framework/"
               echo "✅ services.jar moved to rom."
