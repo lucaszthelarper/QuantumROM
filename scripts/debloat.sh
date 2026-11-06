@@ -3,17 +3,19 @@
 
 # GENERAL / SYSTEM / BLOAT
 DEBLOAT_APPS=(
-"HMT" "FactoryCameraFB" "WlanTest" "AirGlance" "AirReadingGlass" 
-"AndroidGlassesCore" "SOAgent77" "ARCore" "ARDrawing" "ARZone"
-"SingleTakeService" "BlockchainBasicKit" "Cameralyzer" 
-"DictDiotekForSec" "EasymodeContactsWidget81"
+"HMT" "PaymentFramework" "FactoryCameraFB"
+"WlanTest" "AirGlance" "AirReadingGlass" "AndroidGlassesCore"
+"SOAgent77" "BGMProvider"
+"SingleTakeService" "BlockchainBasicKit"
+"Cameralyzer" "DictDiotekForSec" "EasymodeContactsWidget81"
 "Fast" "FunModeSDK" "GearManagerStub" "KidsHome_Installer"
-"LinkSharing_v11" "LiveDrawing" "MAPSAgent" "MdecService"
+"LinkSharing_v11" "MAPSAgent" "MdecService"
 "MinusOnePage" "MoccaMobile" "Netflix_stub" "Notes40"
-"ParentalCare" "PhotoTable" "SmartReminder" "SmartSwitchStub"
-"UnifiedWFC" "UniversalMDMClient" "VoiceAccess" "VTCameraSetting"
+"ParentalCare" "PhotoTable" "SmartReminder"
+"UnifiedWFC" "UniversalMDMClient" "VideoEditorLite_Dream_N"
+"VisionIntelligence3.7" "VoiceAccess" "VTCameraSetting"
 "WebManual" "WifiGuider" "AutomationTest_FB" "FactoryTestProvider"
-"CIDManager" "FacAtFunction" "serviceModeApp_FB"
+"StickerCenter" "CIDManager" "FacAtFunction" "serviceModeApp_FB"
 )
 
 
@@ -36,13 +38,13 @@ CARRIER_APPS=(
 SAMSUNG_APPS=(
 "SamsungCalendar" "SamsungTTS" "SamsungBilling"
 "OneDrive_Samsung_v3" "SamsungCarKeyFw"
-"SamsungPass" "SamsungSmartSuggestions"
-"SamsungPassAutofill_v1" "WarrantyCare"
-"AirCommand" "AppUpdateCenter" "AREmoji" "SketchBook"
-"AREmojiEditor" "AutoDoodle" "AvatarEmojiSticker"
-"AvatarEmojiSticker_S" "AvatarPicker" "GalaxyBetaService"
-"GalleryWidget" "LiveStickers" "StoryService"
-"StickerFaceARAvatar" "sticker" "PaymentFramework"
+"SamsungPass"
+"SamsungPassAutofill_v1"
+"AirCommand" "AppUpdateCenter"
+"AvatarEmojiSticker"
+"AvatarEmojiSticker_S" "AvatarPicker"
+"LiveStickers" "StoryService"
+"sticker"
 )
 
 
@@ -55,24 +57,25 @@ SAMSUNG_DEX_APPS=("DeXonPC" "DesktopModeUiService" "KnoxDesktopLauncher"
 # SAMSUNG BIXBY APPS
 SAMSUNG_BIXBY_APPS=(
 "BixbyWakeup" "VisionIntelligence3.7" "Bixby" "BixbyService"
-"BixbyVisionFramework3.5" "SystemUIBixby2" "VisionModel-Stub" "SettingsBixby"
+"BixbyVisionFramework3.5" "SystemUIBixby2" "VisionModel-Stub"
 )
 
 
 # SAMSUNG AI / SMART
 SAMSUNG_AI=(
-"LiveTranscribe" "SmartEye" "SmartPush"
-"SmartPush_64" "SmartThingsKit" "SmartTouchCall"
+"SmartEye" "SmartPush" "SmartPush_64"
+"SmartThingsKit" "SmartTouchCall"
+"VisionIntelligence3.7"
 )
 
 
 # GOOGLE APPS
 GOOGLE_APPS=(
 "SpeechServicesByGoogle" "Maps" "Duo" "Photos"
-"AssistantShell" "BardShell" "DuoStub"
-"GoogleCalendarSyncAdapter" "AndroidDeveloperVerifier"
-"YourPhone_Stub" "AndroidAutoStub" "FamilyLinkParentalControls"
-"AndroidSystemIntelligence" "GoogleRestore" "SamsungMessages"
+"AssistantShell" "BardShell" "DuoStub" "YouTube"
+"GoogleCalendarSyncAdapter" "AndroidDeveloperVerifier" "Gmail2"
+"YourPhone_Stub" "FamilyLinkParentalControls" "Chrome"
+"AndroidSystemIntelligence" "GoogleRestore"
 "SearchSelector" "PlayAutoInstallConfig" "FamilyLinkParentalControls"
 )
 
@@ -85,33 +88,32 @@ FACEBOOK_APPS=(
 
 # DRIVERS
 HARDWARE_DRIVERS=(
-"DevGPUDriver-EX2200" "GameDriver-EX2100" "GameDriver-EX2200" "GameDriver-SM8150"
+"DevGPUDriver-EX2200"
+"GameDriver-EX2100" "GameDriver-EX2200" "GameDriver-SM8150"
 )
 
 
 # MISC / SERVICES
 MISC_SERVICES=(
 "AuthFramework" "Discover" "DiscoverSEP"
-"EarphoneTypeC" "EasySetup"
-"HashTagService" "LedCoverService"
-"LinkToWindowsService" "MemorySaver_O_Refresh"
-"MultiControl" "MultiControlVP6"
+"EasySetup"
+"HashTagService"
+"MemorySaver_O_Refresh"
 "OMCAgent5" "OneStoreService" "FactoryAirCommandManager"
 "SOAgent7" "SOAgent75" "SOAgent76"
 "SolarAudio-service" "SPPPushClient"
 "SumeNNService" "SVoiceIME"
 "SwiftkeyIme" "SwiftkeySetting"
-"TADownloader"
-"TalkbackSE" "TalkBack" "TaPackAuthFw"
+"TADownloader" "TaPackAuthFw"
 "UltraDataSaving_O" "Upday"
-"YourPhone_P1_5" "DsmsAPK"
+"DsmsAPK"
 "vexfwk_service" "VexScanner"
-"LiveEffectService" "MyGalaxyService"
+"MyGalaxyService"
 )
 
 
 # Knox
-KNOX_APPS=("Rampart" "KnoxFrameBufferProvider")
+KNOX_APPS=("KnoxFrameBufferProvider")
 
 
 REMOVE_ESIM_FILES() {
@@ -258,7 +260,6 @@ DEBLOAT() {
 	REMOVE_FABRIC_CRYPTO "$EXTRACTED_FIRM_DIR"
 
 	echo -e "- Deleting unnecessary files and folders."
-	rm -rf "$EXTRACTED_FIRM_DIR/system/system/kaf"
     rm -rf "$EXTRACTED_FIRM_DIR/system/system/app"/SamsungTTS*
     rm -rf "$EXTRACTED_FIRM_DIR/system/system/etc/init/boot-image.bprof"
     rm -rf "$EXTRACTED_FIRM_DIR/system/system/etc/init/boot-image.prof"
