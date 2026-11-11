@@ -738,44 +738,6 @@ REPLACE_SMALI_METHOD() {
 }
 
 
-HEX_PATCH() {
-    echo " "
-
-	if [ "$#" -ne 3 ]; then
-        echo -e "Usage: ${FUNCNAME[0]} <FILE> <TARGET_VALUE> <REPLACE_VALUE>"
-        return 1
-    fi
-
-    local FILE="$1"
-    local FROM="$(echo -e "$2" | tr '[:upper:]' '[:lower:]')"
-    local TO="$(echo -e "$3" | tr '[:upper:]' '[:lower:]')"
-
-    [ ! -f "$FILE" ] && { echo -e "- File not found: $FILE"; return 0; }
-
-    xxd -p -c 0 "$FILE" | grep -q "$FROM" || {
-        echo -e "- Pattern not found: $FROM"
-        return 0
-    }
-
-    echo -e "- Patching: $FILE"
-    echo -e "- From $FROM to $TO"
-    [ -f "$FILE.bak" ] || cp "$FILE" "$FILE.bak"
-
-    xxd -p -c 0 "$FILE" | sed "s/$FROM/$TO/" | xxd -r -p > "$FILE.tmp" &&
-    mv "$FILE.tmp" "$FILE"
-
-    xxd -p -c 0 "$FILE" | grep -q "$TO" && {
-        echo -e "- Patch success"
-        rm -rf "$FILE.bak"        
-        return 0
-    }
-
-    echo -e "- Patch failed, restoring backup"
-    mv "$FILE.bak" "$FILE"
-    return 0
-}
-
-
 PATCH_FLAG_SECURE() {
 	echo " "
 
@@ -1248,8 +1210,8 @@ PATCH_BT_LIB() {
             p_arr=("9775392a000014360080" "9777392a000014360080" "3a00902a000014330080" "f671392a000014330080" "f673392a000014330080" "7674392a000014330080" "d674392a000014330080")
             ;;
         17)
-            s_arr=("56523948050037330080")
-            p_arr=("5652392a000014330080")
+            s_arr=("56523948050037330080" "00122a0140395f01086b00020054")
+            p_arr=("5652392a000014330080" "00122a0140395f01086bde030014")
             ;;
         *)
             echo "ERROR: Unsupported Android release: $ANDROID_VERSION"
@@ -2094,6 +2056,9 @@ APPLY_STOCK_CONFIG() {
         fi
     fi
 
+	# Add Mediatek bluetooth apex
+	FIX_BLUETOOTH "$EXTRACTED_FIRM_DIR"
+
     # Apply stock floating feature.
 	APPLY_STOCK_ROM_FLOATING_FEATURE "$STOCK_ROM_FLOATING_FEATURE" "$TARGET_ROM_FLOATING_FEATURE"
 
@@ -2282,7 +2247,7 @@ ADD_CHINA_SMART_MANAGER() {
 
     local EXTRACTED_FIRM_DIR="$1"
 
-	echo "Adding China smart manager."
+	echo "Adding China Smart manager, App lock, Firewall."
 
 	if [ ! -d "${EXTRACTED_FIRM_DIR}/system" ]; then
         echo "No extracted firmware found."
@@ -2348,7 +2313,7 @@ ADD_CHINA_SMART_MANAGER() {
 }
 
 
-ADD_SAMSUNG_FLAGSHIP_APPS() {
+ADD_SAMSUNG_OCR_APP() {
     echo " "
 
     if [ "$#" -ne 1 ]; then
@@ -2358,7 +2323,81 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
 
     local EXTRACTED_FIRM_DIR="$1"
 
-	echo -e "Adding samsung full ONEUI apps."
+	echo -e "Adding samsung ocr app."
+
+	if [ ! -d "${EXTRACTED_FIRM_DIR}/system" ]; then
+        echo "No extracted firmware found."
+        return 1
+    fi
+
+	local PRODUCT_BRAND=$(GET_PROP "$EXTRACTED_FIRM_DIR" "system" "ro.product.system.brand")
+    local ANDROID_VERSION=$(GET_PROP "$EXTRACTED_FIRM_DIR" "system" "ro.system.build.version.release")
+
+	if [ "$PRODUCT_BRAND" != "samsung" ]; then
+        return 0
+    fi
+
+	if [[ ! "$ANDROID_VERSION" =~ ^(14|15|16)$ ]]; then
+        echo "- Unsupported Android version: $ANDROID_VERSION"
+        return 0
+    fi
+
+	if [ -f "${EXTRACTED_FIRM_DIR}/system/system/etc/floating_feature.xml" ]; then
+        local TARGET_ROM_FLOATING_FEATURE="${EXTRACTED_FIRM_DIR}/system/system/etc/floating_feature.xml"
+    elif [ -f "${EXTRACTED_FIRM_DIR}/vendor/etc/floating_feature.xml" ]; then
+        local TARGET_ROM_FLOATING_FEATURE="${EXTRACTED_FIRM_DIR}/vendor/etc/floating_feature.xml"
+    else
+        echo "- Error: floating_feature.xml not found!"
+		return 1
+    fi
+
+    if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/app/OCRDataProvider" ] && \
+        [ ! -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
+
+		if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
+            wget -q --no-check-certificate\
+                "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
+                -O "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
+        else
+            echo "- No internet connection available. Unable to download: Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
+            return 0
+        fi
+    fi
+
+    if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/app/OCRDataProvider" ] && \
+        [ -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
+
+        if [ -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
+            rm -rf "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}"
+            unzip -oq "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
+                -d "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}"
+
+            #============= OCR ==========#
+            sed -i '/SEC_FLOATING_FEATURE_CAMERA_CONFIG_OCR_ENGINE_UNSUPPORT /d' "$TARGET_ROM_FLOATING_FEATURE"
+            UPDATE_FLOATING_FEATURE "$TARGET_ROM_FLOATING_FEATURE" "SEC_FLOATING_FEATURE_CAMERA_CONFIG_STRIDE_OCR_VERSION" "V2"
+            cp -rfa "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
+
+            if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/app/OCRDataProvider" ]; then
+                cp -rfa "${QT_DIR}/QuantumROM/Mods/Apps/OCR/." "${EXTRACTED_FIRM_DIR}/"
+            fi
+		fi
+    fi
+
+	chmod -R u+rwX "$EXTRACTED_FIRM_DIR"
+}
+
+
+ADD_SAMSUNG_IMPORTANT_APPS() {
+    echo " "
+
+    if [ "$#" -ne 1 ]; then
+        echo -e "Usage: ${FUNCNAME[0]} <EXTRACTED_FIRM_DIR>"
+        return 1
+    fi
+
+    local EXTRACTED_FIRM_DIR="$1"
+
+	echo -e "Adding samsung important apps."
 
 	if [ ! -d "${EXTRACTED_FIRM_DIR}/system" ]; then
         echo "No extracted firmware found."
@@ -2386,8 +2425,66 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
 		return 1
     fi
 
-    # ================= PHOTO EDITOR AI FULL =================
-    echo "- Adding Photo editor ai full."
+    if [ ! -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
+        if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
+            wget -q --no-check-certificate\
+                "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
+               -O "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
+        else
+            echo "No internet connection available. Unable to download: Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
+            return 0
+        fi
+    fi
+
+    if [ -s "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
+        rm -rf "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}"
+        unzip -o "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
+            -d "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}" >/dev/null 2>&1
+
+        cp -rfa "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
+    fi
+
+	chmod -R u+rwX "$EXTRACTED_FIRM_DIR"
+}
+
+
+ADD_SAMSUNG_FULL_PHOTOEDITOR_APP() {
+    echo " "
+
+    if [ "$#" -ne 1 ]; then
+        echo -e "Usage: ${FUNCNAME[0]} <EXTRACTED_FIRM_DIR>"
+        return 1
+    fi
+
+    local EXTRACTED_FIRM_DIR="$1"
+
+	echo -e "Adding samsung full ai photo editor app."
+
+	if [ ! -d "${EXTRACTED_FIRM_DIR}/system" ]; then
+        echo "No extracted firmware found."
+        return 1
+    fi
+
+	local PRODUCT_BRAND=$(GET_PROP "$EXTRACTED_FIRM_DIR" "system" "ro.product.system.brand")
+    local ANDROID_VERSION=$(GET_PROP "$EXTRACTED_FIRM_DIR" "system" "ro.system.build.version.release")
+
+	if [ "$PRODUCT_BRAND" != "samsung" ]; then
+        return 1
+    fi
+
+	if [[ ! "$ANDROID_VERSION" =~ ^(14|15|16|17)$ ]]; then
+        echo "- Unsupported Android version: $ANDROID_VERSION"
+        return 0
+    fi
+
+	if [ -f "${EXTRACTED_FIRM_DIR}/system/system/etc/floating_feature.xml" ]; then
+        local TARGET_ROM_FLOATING_FEATURE="${EXTRACTED_FIRM_DIR}/system/system/etc/floating_feature.xml"
+    elif [ -f "${EXTRACTED_FIRM_DIR}/vendor/etc/floating_feature.xml" ]; then
+        local TARGET_ROM_FLOATING_FEATURE="${EXTRACTED_FIRM_DIR}/vendor/etc/floating_feature.xml"
+    else
+        echo "- Error: floating_feature.xml not found!"
+		return 1
+    fi
 	
 	if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/priv-app/PhotoEditor_AIFull" ] && \
         [ ! -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" ]; then
@@ -2437,62 +2534,6 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
     if [ -f "${EXTRACTED_FIRM_DIR}/system/system/cameradata/portrait_data/single_bokeh_feature.json" ]; then
         sed -i '0,/"ModelType": "MODEL_TYPE_INSTANCE_CAPTURE"/s//"ModelType": "MODEL_TYPE_OBJ_INSTANCE_CAPTURE"/' \
         "${EXTRACTED_FIRM_DIR}/system/system/cameradata/portrait_data/single_bokeh_feature.json"
-    fi
-
-    # ================= OCR DATA PROVIDER =================
-    echo "- Adding Samsung OCR Data Provider."
-
-    if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/app/OCRDataProvider" ] && \
-        [ ! -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
-
-		if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
-            wget -q --no-check-certificate\
-                "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
-                -O "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
-        else
-            echo "- No internet connection available. Unable to download: Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
-            return 0
-        fi
-    fi
-
-    if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/app/OCRDataProvider" ] && \
-        [ -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
-
-        rm -rf "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}"
-        unzip -o "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
-            -d "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}" >/dev/null 2>&1
-
-	    #============= OCR ==========#
-        sed -i '/SEC_FLOATING_FEATURE_CAMERA_CONFIG_OCR_ENGINE_UNSUPPORT /d' "$TARGET_ROM_FLOATING_FEATURE"
-        UPDATE_FLOATING_FEATURE "$TARGET_ROM_FLOATING_FEATURE" "SEC_FLOATING_FEATURE_CAMERA_CONFIG_STRIDE_OCR_VERSION" "V2"
-
-        cp -rfa "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
-
-		if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/app/OCRDataProvider" ]; then
-	        cp -rfa "${QT_DIR}/QuantumROM/Mods/Apps/OCR/." "${EXTRACTED_FIRM_DIR}/"
-        fi
-    fi
-
-    # ================= IMPORTANT APPS =================
-	echo "- Adding Samsung Important Apps."
-
-    if [ ! -f "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
-        if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
-            wget -q --no-check-certificate\
-                "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
-               -O "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
-        else
-            echo "No internet connection available. Unable to download: Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
-            return 0
-        fi
-    fi
-
-    if [ -s "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
-        rm -rf "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}"
-        unzip -o "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
-            -d "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}" >/dev/null 2>&1
-
-        cp -rfa "${QT_DIR}/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
     fi
 
     chmod -R u+rwX "$EXTRACTED_FIRM_DIR"
@@ -2640,6 +2681,7 @@ GEN_FS_CONFIG() {
     rm -f "$TMP_EXISTING"
 
     echo -e "- $PARTITION fs_config generated"
+	chmod -R u+rwX "$EXTRACTED_FIRM_DIR"
 }
 
 

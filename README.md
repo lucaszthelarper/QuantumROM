@@ -59,7 +59,7 @@ Open your forked repository.
 - Click Run workflow.
 
 #### 3. Set Your Device Model.
-Update your device model in the STOCK_DEVICE_MODEL option.
+Select your device model in the STOCK_DEVICE_MODEL option.
 - If your model is available in /QuantumROM/Device folder of this repository, the tool will work for your device.
 - If your model is not present, set STOCK_DEVICE_MODEL to None.
 
@@ -119,7 +119,10 @@ In your forked repository, go to:
 
 #### 03. Bluetooth Library Patcher.
 - 3arthur6
--https://github.com/3arthur6/BluetoothLibraryPatcher
+- duhansysl
+- 
+https://github.com/3arthur6/BluetoothLibraryPatcher
+- https://github.com/duhansysl/Bluetooth-Library-Patcher/tree/main
 - Used for patching Samsung Bluetooth libraries.
 
 #### 04. UN1CA Project.
@@ -127,7 +130,6 @@ In your forked repository, go to:
 - https://github.com/salvogiangri/UN1CA
 
 #### Components Used from UN1CA.
-- `HEX_PATCH` function (modified from UN1CA implementation)
 - Knox Guard Patch (from UN1CA)
 - SSRM Patch (from UN1CA)
 - Some SELinux patches followed the UN1CA implementation.
