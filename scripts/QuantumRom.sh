@@ -1767,6 +1767,10 @@ PATCH_APK_SHARED_USER_ID_VERIFICATION() {
 
 			REPLACE_SMALI_METHOD "$FILE_1" "$METHOD_NAME_1" "$REPLACE_BODY_1"
             ;;
+        16)
+            local SIG_PATCH="${QT_DIR}/QuantumROM/patches/signature/services.jar/A16.2-Allow-custom-platform-signature.patch"
+            APPLY_SMALI_PATCH "$services" "$SIG_PATCH" || echo "- Warning: signature patch was not applied."
+            ;;
         *)
             echo "- Unsupported Android version: $ANDROID_VERSION"
             return 0
@@ -2421,7 +2425,7 @@ PATCH_32BIT_HALS() {
     case "$SDK_FULL" in
         "37.0")
             PREBUILT_DEVICE="a57xnsxx"
-            DEVICE_LABEL="A57x (a57xnsxx)"
+            DEVICE_LABEL="A57n (a57xnsxx)"
             ;;
         "36.1")
             PREBUILT_DEVICE="r11sxxx"
