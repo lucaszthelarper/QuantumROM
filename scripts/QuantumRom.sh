@@ -1769,7 +1769,12 @@ PATCH_APK_SHARED_USER_ID_VERIFICATION() {
             ;;
         16)
             local SIG_PATCH="${QT_DIR}/QuantumROM/patches/signature/services.jar/A16.2-Allow-custom-platform-signature.patch"
-            APPLY_SMALI_PATCH "$services" "$SIG_PATCH" || echo "- Warning: signature patch was not applied."
+            echo "- Applying: $(basename "$SIG_PATCH")"
+            if APPLY_SMALI_PATCH "$services" "$SIG_PATCH"; then
+                echo "- Signature patch applied."
+            else
+                echo "- Warning: signature patch was NOT applied."
+            fi
             ;;
         *)
             echo "- Unsupported Android version: $ANDROID_VERSION"
@@ -2425,7 +2430,7 @@ PATCH_32BIT_HALS() {
     case "$SDK_FULL" in
         "37.0")
             PREBUILT_DEVICE="a57xnsxx"
-            DEVICE_LABEL="A57n (a57xnsxx)"
+            DEVICE_LABEL="A57x (a57xnsxx)"
             ;;
         "36.1")
             PREBUILT_DEVICE="r11sxxx"
@@ -4152,7 +4157,8 @@ APPLY_SMALI_PATCH() {
         return 1
     fi
 
-    patch -p1 -d "$TARGET_DIR" --forward --no-backup-if-mismatch -s < "$PATCH_FILE"
+    patch -p1 -d "$TARGET_DIR" --forward --no-backup-if-mismatch < "$PATCH_FILE" | sed 's/^/  /'
+    return "${PIPESTATUS[0]}"
 }
 
 
