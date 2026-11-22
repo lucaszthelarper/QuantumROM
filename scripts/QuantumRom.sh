@@ -2420,8 +2420,8 @@ PATCH_32BIT_HALS() {
 
     case "$SDK_FULL" in
         "37.0")
-            PREBUILT_DEVICE="a57nsxx"
-            DEVICE_LABEL="A57n (a57nsxx)"
+            PREBUILT_DEVICE="a57xnsxx"
+            DEVICE_LABEL="A57x (a57xnsxx)"
             ;;
         "36.1")
             PREBUILT_DEVICE="r11sxxx"
