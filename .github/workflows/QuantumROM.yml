@@ -77,6 +77,15 @@ on:
           - "False"
         default: "True"
 
+      SETUPWIZARD_MOD:
+        description: "Patch Welcome at Setupwizard"
+        required: true
+        type: choice
+        options:
+          - "True"
+          - "False"
+        default: "True"
+
       SETTINGS_MOD:
         description: "Patch SecSettings to have exclusive features [Allow settings mod features Sixteen QRP2 only]"
         required: true
@@ -422,7 +431,7 @@ jobs:
            PATCH_SEC_SETTINGS "$FIRM_DIR"
          fi
 
-         if [ "$ADD_CUSTOM_FEATURES" = "True" ]; then
+         if [ "$SETUPWIZARD_MOD" = "True" ]; then
            declare -F PATCH_SEC_SETUPWIZARD >/dev/null || { echo "::error::PATCH_SEC_SETUPWIZARD missing in scripts/QuantumRom.sh"; exit 1; }
            PATCH_SEC_SETUPWIZARD "$FIRM_DIR"
          fi
