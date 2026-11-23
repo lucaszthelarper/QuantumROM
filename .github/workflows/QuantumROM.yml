@@ -10,12 +10,70 @@ on:
         type: choice
         options:
           - SM-A055F
-          - SM-N985F
+          - SM-A057F
           - SM-A065F
-          - SM-A225F
+          - SM-A066B
           - SM-A127F
+          - SM-A135F
+          - SM-A135F_8.5
+          - SM-A137F
+          - SM-A146M
+          - SM-A155F
+          - SM-A156E
+          - SM-A165F
+          - SM-A175F
+          - SM-A176B
+          - SM-A225F
+          - SM-A225M
+          - SM-A226B
+          - SM-A235F
+          - SM-A236E
+          - SM-A245F
+          - SM-A256E
+          - SM-A266B
+          - SM-A315F
+          - SM-A325F
+          - SM-A336E
+          - SM-A346E
+          - SM-A356E
+          - SM-A366B
+          - SM-A415F
+          - SM-A426B
+          - SM-A515F
+          - SM-A525F
+          - SM-A528B
+          - SM-A536B
+          - SM-A546E
+          - SM-A556E
+          - SM-A715F
+          - SM-A725F
+          - SM-A736B
+          - SM-E225F
+          - SM-E346B
+          - SM-G780F
+          - SM-G780G
+          - SM-G781B
+          - SM-G990E
+          - SM-M136B
+          - SM-M146B
+          - SM-M156B
+          - SM-M166P
+          - SM-M176B
+          - SM-M215G
+          - SM-M225F
+          - SM-M325F
+          - SM-M346B
+          - SM-M356B
+          - SM-M366B
+          - SM-M556B
+          - SM-M558B
+          - SM-M566B
+          - SM-P613
+          - SM-S901B
+          - SM-S901E
+          - SM-S911B
           - None
-        default: "SM-A127F"
+        default: "SM-A225F"
 
       USE_UI_8_TETHERING_APEX:
         description: "Set True if your kernel BPF version is 5.4 (lower than 5.10)."
@@ -273,7 +331,7 @@ jobs:
 
       - name: Validate STOCK_DEVICE - ${{ inputs.STOCK_DEVICE }}
         run: |
-          REPO="SN-Abdullah-Al-Noman/QuantumROM"
+          REPO="lucaszthelarper/QuantumROM"
           BRANCH="Devices"
 
           source "$(pwd)/scripts/git_utils.sh"
@@ -287,7 +345,7 @@ jobs:
               fi
 
               echo "✅ Device supported: $STOCK_DEVICE"
-              GIT_SPARSE_DOWNLOAD "SN-Abdullah-Al-Noman/QuantumROM" "Devices" "$STOCK_DEVICE" \
+              GIT_SPARSE_DOWNLOAD "lucaszthelarper/QuantumROM" "Devices" "$STOCK_DEVICE" \
                   "$(pwd)/QuantumROM/Devices/$STOCK_DEVICE"
           else
               echo "ℹ️ STOCK_DEVICE is set to None."
@@ -381,19 +439,6 @@ jobs:
 
           if [ "$PATCH_LIBS" = "True" ]; then
               PATCH_32BIT_HALS "$FIRM_DIR"
-          fi
-
-      - name: Apply stock device configuration
-        run: |
-          source "$(pwd)/scripts/debloat.sh"
-          source "$(pwd)/scripts/QuantumRom.sh"
-
-          if [ "$STOCK_DEVICE" != "None" ]; then
-              APPLY_STOCK_CONFIG "$STOCK_DEVICE" "$FIRM_DIR"
-              DECOMPILE "$APKTOOL" "$FIRM_DIR/system/system/framework" "$FIRM_DIR/system/system/framework/ssrm.jar" "$WORK_DIR"
-              PATCH_SSRM "$WORK_DIR/ssrm"
-              RECOMPILE "$APKTOOL" "$FIRM_DIR/system/system/framework" "$WORK_DIR/ssrm" "$WORK_DIR"
-              mv -f "$WORK_DIR/ssrm.jar" "$FIRM_DIR/system/system/framework/"
           fi
 
       - name: Add china smart manager - ${{ inputs.ADD_CHINA_SMART_MANAGER }}
@@ -502,8 +547,8 @@ jobs:
           source "$(pwd)/scripts/QuantumRom.sh"
           B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
           B_V="$(grep -m1 '^ro.system.build.version.incremental=' "$FIRM_DIR/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
-          BUILD_PROP "$FIRM_DIR" "system" "ro.build.display.id" "ProjectDozG Tool+ Paradigm                                                  ${B_ID} ${B_V}"
-          BUILD_PROP "$FIRM_DIR" "product" "ro.build.display.id" "ProjectDozG Tool+ Paradigm                                                  ${B_ID} ${B_V}"
+          BUILD_PROP "$FIRM_DIR" "system" "ro.build.display.id" "${B_ID}.${B_V}"
+          BUILD_PROP "$FIRM_DIR" "product" "ro.build.display.id" "${B_ID}.${B_V}"
           BUILD_IMG "$FIRM_DIR" "all" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
 
       - name: Add SM-A127F kernel vendor/odm - ${{ inputs.A127F_KERNEL }}
